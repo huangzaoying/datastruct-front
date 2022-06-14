@@ -4,6 +4,9 @@
 
 <script>
 import AMapLoader from '@amap/amap-jsapi-loader'
+import userUrl from '../../assets/user.png'
+import stUrl from '../../assets/start.png'
+import edUrl from '../../assets/end.png'
 window._AMapSecurityConfig = {
   securityJsCode: '8aedfd4ddbb3d0fb0b17995938924bc7',
 }
@@ -12,54 +15,58 @@ export default {
   name: 'MapContainer',
   data() {
     return {
+      timer: '',
       map: null,
       autoOptions: {
         input: '',
       },
       auto: null,
+      pathSimplifierIns: '',
+      nav: '',
+      start: '',
+      end: '',
+      lines: [
+        {
+          name: '最优路线',
+          path: [
+            [116.478935, 39.997761],
+            [116.478939, 39.997825],
+            [116.478912, 39.998549],
+            [116.478912, 39.998549],
+            [116.478998, 39.998555],
+            [116.478998, 39.998555],
+            [116.479282, 39.99856],
+            [116.479658, 39.998528],
+            [116.480151, 39.998453],
+            [116.480784, 39.998302],
+            [116.480784, 39.998302],
+            [116.481149, 39.998184],
+            [116.481573, 39.997997],
+            [116.481863, 39.997846],
+            [116.482072, 39.997718],
+            [116.482362, 39.997718],
+            [116.483633, 39.998935],
+            [116.48367, 39.998968],
+            [116.484648, 39.999861],
+          ],
+        },
+      ],
     }
   },
   methods: {
-    initPage(PathSimplifier) {
-      //创建组件实例
-      var pathSimplifierIns = new PathSimplifier({
-        zIndex: 100,
-        map: map, //所属的地图实例
-        getPath: function (pathData, pathIndex) {
-          //返回轨迹数据中的节点坐标信息，[AMap.LngLat, AMap.LngLat...] 或者 [[lng|number,lat|number],...]
-          return pathData.path
-        },
-        getHoverTitle: function (pathData, pathIndex, pointIndex) {
-          //返回鼠标悬停时显示的信息
-          if (pointIndex >= 0) {
-            //鼠标悬停在某个轨迹节点上
-            return (
-              pathData.name + '，点:' + pointIndex + '/' + pathData.path.length
-            )
-          }
-          //鼠标悬停在节点之间的连线上
-          return pathData.name + '，点数量' + pathData.path.length
-        },
-        renderOptions: {
-          //轨迹线的样式
-          pathLineStyle: {
-            strokeStyle: 'red',
-            lineWidth: 6,
-            dirArrowStyle: true,
-          },
-        },
-      })
-    },
     initMap() {
       AMapLoader.load({
         key: 'a7e6c5b3ee88ad5b699bef8f8f9e960a', // 申请好的Web端开发者Key，首次调用 load 时必填
         version: '2.0', // 指定要加载的 JSAPI 的版本，缺省时默认为 1.4.15
-        uiVersion: '1.0.11', // 版本号,
+        AMapUI: {
+          //重点就是这个
+          version: '1.1',
+          plugins: ['misc/PathSimplifier', 'overlay/SimpleMarker'], //SimpleMarker设置自定义图标，PathSimplifier轨迹展示组件
+        },
         plugins: [
           'AMap.ToolBar',
           'AMap.Scale',
           'AMap.HawkEye',
-          'AMap.MapType',
           'AMap.Geolocation',
           'AMap.AutoComplete',
         ], // 需要使用的的插件列表，如比例尺'AMap.Scale'等
@@ -69,93 +76,13 @@ export default {
             //设置地图容器id
             viewMode: '3D', //是否为3D地图模式
             zoom: 16, //初始化地图级别
-            center: [105.681694, 26.231119], //初始化地图中心点位置
+            center: this.lines[0].path[(this.lines[0].path.length - 1) / 2], //初始化地图中心点位置
           })
           this.map.addControl(new AMap.Scale())
           this.map.addControl(new AMap.ToolBar())
           this.map.addControl(new AMap.HawkEye())
-          // this.map.addControl(new AMap.MapType())
           this.map.addControl(new AMap.Geolocation())
           this.auto = new AMap.AutoComplete(this.autoOptions)
-          var path = [
-            new AMap.LngLat(105.669335, 26.265606),
-            new AMap.LngLat(105.657662, 26.242821),
-            new AMap.LngLat(105.681694, 26.231119),
-            new AMap.LngLat(105.737313, 26.274226),
-          ]
-          // 创建一个 Marker 实例：
-          let img = require('../../assets/end.png')
-          var marker = new AMap.Marker({
-            position: new AMap.LngLat(105.737313, 26.274226), // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
-            offset: new AMap.Pixel(-15, -12), //相对于基点的偏移位置
-            icon: new AMap.Icon({
-              image: img,
-            }),
-            title: '终点',
-          })
-          img = require('../../assets/start.png')
-          var marker1 = new AMap.Marker({
-            position: new AMap.LngLat(105.669335, 26.265606), // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
-            offset: new AMap.Pixel(-15, -12), //相对于基点的偏移位置
-            icon: new AMap.Icon({
-              image: img,
-            }),
-            title: '起点',
-          })
-          // 将创建的点标记添加到已有的地图实例：
-          this.map.add(marker)
-          this.map.add(marker1)
-          // // 创建折线实例
-          // var polyline = new AMap.Polyline({
-          //   path: path,
-          //   borderWeight: 10, // 线条宽度，默认为 1
-          //   strokeColor: 'blue', // 线条颜色
-          //   lineJoin: 'round', // 折线拐点连接处样式
-          // })
-          // // 将折线添加至地图实例
-          // this.map.add(polyline)
-          //加载PathSimplifier，loadUI的路径参数为模块名中 'ui/' 之后的部分
-          AMapUI.load(['ui/misc/PathSimplifier'], function (PathSimplifier) {
-            if (!PathSimplifier.supportCanvas) {
-              alert('当前环境不支持 Canvas！')
-              return
-            }
-
-            //启动页面
-            this.initPage(PathSimplifier)
-            //这里构建两条简单的轨迹，仅作示例
-            pathSimplifierIns.setData([
-              {
-                name: '轨迹0',
-                path: [
-                  [105.669335, 26.265606],
-                  [105.657662, 26.242821],
-                  [105.681694, 26.231119],
-                  [105.737313, 26.274226],
-                ],
-              },
-              {
-                name: '大地线',
-                //创建一条包括500个插值点的大地线
-                path: PathSimplifier.getGeodesicPath(
-                  [116.405289, 39.904987],
-                  [87.61792, 43.793308],
-                  500
-                ),
-              },
-            ])
-
-            //创建一个巡航器
-            var navg0 = pathSimplifierIns.createPathNavigator(
-              0, //关联第1条轨迹
-              {
-                loop: true, //循环播放
-                speed: 1000000,
-              }
-            )
-
-            navg0.start()
-          })
         })
         .catch((e) => {
           console.log(e)
@@ -167,9 +94,141 @@ export default {
     this.initMap()
   },
   created() {
+    //消息订阅 当对方发数据就触发
     eventBus.$on('shareuserInput', (val) => {
       this.autoOptions.input = val.inputId
+      let that = this
+      var my_map = this.map
+      if (that.pathSimplifierIns) {
+        //通过该方法清空上次传入的轨迹
+        that.pathSimplifierIns.setData([])
+        that.start.remove()
+        that.end.remove()
+      }
+      AMapUI.loadUI(
+        ['misc/PathSimplifier', 'overlay/SimpleMarker'],
+        function (PathSimplifier, SimpleMarker) {
+          // that.end = new SimpleMarker({
+          //   //自定义图标地址
+          //   iconTheme: 'fresh',
+          //   iconStyle: {
+          //     src: edUrl,
+          //     style: {
+          //       width: '25px',
+          //       height: '37px',
+          //     },
+          //   },
+          //   //设置基点偏移
+          //   offset: new AMap.Pixel(0, 0),
+          //   anchor: 'center',
+          //   map: my_map,
+          //   showPositionPoint: false,
+          //   position: [116.484648, 39.999861],
+          //   zIndex: 100,
+          // })
+          // that.start = new SimpleMarker({
+          //   //自定义图标地址
+          //   iconTheme: 'fresh',
+          //   iconStyle: {
+          //     src: stUrl,
+          //     style: {
+          //       width: '25px',
+          //       height: '37px',
+          //     },
+          //   },
+          //   //设置基点偏移
+          //   offset: new AMap.Pixel(0, 0),
+          //   anchor: 'center',
+          //   map: my_map,
+          //   showPositionPoint: false,
+          //   position: [116.478935, 39.997761],
+          //   zIndex: 100,
+          // })
+          //起点和终点
+          that.end = new AMap.Marker({
+            position: that.lines[0].path[that.lines[0].path.length - 1], // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
+            offset: new AMap.Pixel(-15, -12), //相对于基点的偏移位置
+            icon: new AMap.Icon({
+              image: edUrl,
+            }),
+          })
+          that.start = new AMap.Marker({
+            position: that.lines[0].path[0], // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
+            offset: new AMap.Pixel(-15, -12), //相对于基点的偏移位置
+            icon: new AMap.Icon({
+              image: stUrl,
+            }),
+          })
+          // 将创建的点标记添加到已有的地图实例：
+          that.map.add(that.start)
+          that.map.add(that.end)
+
+          //开始轨迹
+          var emptyLineStyle = {
+            lineWidth: 0,
+            fillStyle: null,
+            strokeStyle: null,
+            borderStyle: null,
+          }
+          that.pathSimplifierIns = new PathSimplifier({
+            zIndex: 100,
+            map: my_map, //所属的地图实例
+            getPath: function (pathData, pathIndex) {
+              return pathData.path
+            },
+            getHoverTitle: function (pathData, pathIndex, pointIndex) {
+              return null
+            },
+            renderOptions: {
+              //将点、线相关的style全部置emptyLineStyle
+              pathLineStyle: emptyLineStyle,
+              pathLineSelectedStyle: emptyLineStyle,
+              pathLineHoverStyle: emptyLineStyle,
+              keyPointStyle: emptyLineStyle,
+              startPointStyle: emptyLineStyle,
+              endPointStyle: emptyLineStyle,
+              keyPointHoverStyle: emptyLineStyle,
+              keyPointOnSelectedPathLineStyle: emptyLineStyle,
+            },
+          })
+          //设置轨迹数据 that.lines是我项目的数据，具体根据自身项目设置
+          that.pathSimplifierIns.setData(that.lines)
+          //因为可能存在多条路径，所以循环设置
+          that.lines.forEach((item, index) => {
+            //创建巡航器 移动轨迹	index是重点
+            that.navg = that.pathSimplifierIns.createPathNavigator(index, {
+              loop: false,
+              speed: 300,
+              pathNavigatorStyle: {
+                width: 50,
+                height: 50,
+                //使用图片
+                content: PathSimplifier.Render.Canvas.getImageContent(
+                  userUrl,
+                  onload,
+                  onerror
+                ),
+                strokeStyle: 'white',
+                fillStyle: 'white',
+                //经过路径的样式
+                pathLinePassedStyle: {
+                  lineWidth: 6,
+                  strokeStyle: 'blue',
+                  dirArrowStyle: {
+                    stepSpace: 20,
+                    strokeStyle: 'white',
+                  },
+                },
+              },
+            })
+            that.navg.start()
+          })
+        }
+      )
     })
+  },
+  beforeDestroy() {
+    eventBus.$off('shareuserInput')
   },
 }
 </script>
