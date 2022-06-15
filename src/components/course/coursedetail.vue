@@ -1,166 +1,159 @@
 <template>
-  <div class="grid-container">
-        <div class="item1"><h3>资料</h3>
-            <el-upload
-            class="upload-demo"
-            ref="upload"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            :file-list="fileList"
-            :auto-upload="false">
-            <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-            </el-upload>
-            <!-- <input type="file" required="required" multiple><el-button type="primary">上传<i class="el-icon-upload el-icon--right"></i></el-button></input> -->
-            <!--  把href中的路径改成要下载的文件路径-->
-            <button type="button" id="btn" class="btn btn-default">
-                <a   href="C:Users/Administrator/Desktop/文件.docx" download="下载"></a>下载
-            </button>
+  <el-row :gutter="20">
+    <el-col :span="6">
+      <h1>课程信息</h1>
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span>课程信息</span>
+        </div>
+        <div v-for="item in course" :key="item" class="text item">
+          {{ item + '： 暂无' }}
+        </div>
+      </el-card>
+      <div class="block" style="margin-top: 50px">
+        <div class="radio">
+          排序：
+          <el-radio-group v-model="reverse">
+            <el-radio :label="true">倒序</el-radio>
+            <el-radio :label="false">正序</el-radio>
+          </el-radio-group>
         </div>
 
-        <div class="item2"><h3>当前进度</h3>
-            <el-progress :text-inside="true" :stroke-width="30" :percentage="50" color="skyblue" status="exception"></el-progress>
+        <el-timeline :reverse="reverse">
+          <el-timeline-item
+            v-for="(activity, index) in activities"
+            :key="index"
+            :timestamp="activity.timestamp"
+          >
+            {{ activity.content }}
+          </el-timeline-item>
+        </el-timeline>
+      </div>
+    </el-col>
+    <el-col :span="6">
+      <h1>考试信息</h1>
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span>卡片名称</span>
         </div>
-        <div class="item3"><h3>作业</h3>
-            <el-dropdown>
-                <el-button type="primary">
-                    详情<i class="el-icon-arrow-down el-icon--right"></i>
-                </el-button>
-                <el-dropdown-menu slot="dropdown" style="width:50%">
-                    <el-dropdown-item >已交</el-dropdown-item>
-                    <el-dropdown-item>作业1</el-dropdown-item>
-                    <el-dropdown-item divided>待交</el-dropdown-item>
-                    <el-dropdown-item>作业2</el-dropdown-item>
-                    <el-dropdown-item>作业3</el-dropdown-item>
-                </el-dropdown-menu>
-            </el-dropdown>
+        <div v-for="o in 4" :key="o" class="text item">
+          {{ '列表内容 ' + o }}
         </div>
-        <div class="item4"><h3>考试</h3>
-            <el-dropdown>
-                <el-button type="primary">
-                    详情<i class="el-icon-arrow-down el-icon--right"></i>
-                </el-button>
-                <el-dropdown-menu slot="dropdown" style="width:50%">
-                    <el-dropdown-item >期中考试</el-dropdown-item>
-                    <el-dropdown-item>考试时间</el-dropdown-item>
-                    <el-dropdown-item>考试地点</el-dropdown-item>
-                    <el-dropdown-item divided>期末考试</el-dropdown-item>
-                    <el-dropdown-item>考试时间</el-dropdown-item>
-                    <el-dropdown-item>考试地点</el-dropdown-item>
-                </el-dropdown-menu>
-            </el-dropdown>
+      </el-card>
+    </el-col>
+    <el-col :span="6">
+      <el-upload
+        class="upload-demo"
+        action="https://jsonplaceholder.typicode.com/posts/"
+        :on-preview="handlePreview"
+        :on-remove="handleRemove"
+        :before-remove="beforeRemove"
+        multiple
+        :limit="3"
+        :on-exceed="handleExceed"
+        :file-list="fileList"
+      >
+        <el-button size="small" type="primary">点击上传</el-button>
+        <div slot="tip" class="el-upload__tip">
+          只能上传jpg/png文件，且不超过500kb
         </div>
-        <div class="item5">上课时间</div> 
-        <div class="item6">上课地点</div>
-        <div class="item7">课程群</div>     
-    </div>
+      </el-upload></el-col
+    >
+    <el-col :span="6"></el-col>
+  </el-row>
 </template>
 
 <script>
-import courseVue from './course.vue'
 export default {
-    name: 'coursedetail',
-    data() {
-        return{
-            //课程详细信息
-            id:this.$route.data.id,
-            course:{
+  name: 'home',
+  data() {
+    return {
+      reverse: true,
+      fileList: [],
 
-            },
-            fileList: [{name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}, {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}]
-        }
-    },
-    methods:{
-        async getcourseByid(){           
-            const { data: res } = await this.$http.get('course/findById', {params: this.id})
-            this.course = res.course
+      course: ['课程名称', '上课时间', '上课地点', '考试时间'],
+      activities: [
+        {
+          content: '活动按期开始',
+          timestamp: '2018-04-15',
         },
-        submitUpload() {
-        this.$refs.upload.submit();
-      },
-      handleRemove(file, fileList) {
-        console.log(file, fileList);
-      },
-      handlePreview(file) {
-        console.log(file);
-      }
+        {
+          content: '通过审核',
+          timestamp: '2018-04-13',
+        },
+        {
+          content: '创建成功',
+          timestamp: '2018-04-11',
+        },
+      ],
     }
+  },
+  methods: {
+    handleRemove(file, fileList) {
+      console.log(file, fileList)
+    },
+    handlePreview(file) {
+      console.log(file)
+    },
+    handleExceed(files, fileList) {
+      this.$message.warning(
+        `当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${
+          files.length + fileList.length
+        } 个文件`
+      )
+    },
+    beforeRemove(file, fileList) {
+      return this.$confirm(`确定移除 ${file.name}？`)
+    },
+  },
+  mounted() {},
 }
 </script>
+<style lang="less" scoped>
+.el-row {
+  margin-bottom: 20px;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+.el-col {
+  border-radius: 4px;
+}
+.bg-purple-dark {
+  background: #99a9bf;
+}
+.bg-purple {
+  background: #d3dce6;
+}
+.bg-purple-light {
+  background: #e5e9f2;
+}
+.grid-content {
+  border-radius: 4px;
+  min-height: 36px;
+}
+.row-bg {
+  padding: 10px 0;
+  background-color: #f9fafc;
+}
+.text {
+  font-size: 14px;
+}
 
-<style type="text/css" scoped>
-        /* 栅格布局 */
-        .item1 { grid-area: files; }  
-        .item2 { grid-area: process; }
-        .item3 { grid-area: homework; }
-        .item4 { grid-area: exams; }
-        .item5 { grid-area: course_time; }
-        .item6 { grid-area: classroom; }
-        .item7 { grid-area: course_group; }
-        /* 栅格布局的基本样式 */
-        .grid-container {
-            display: grid;
-            padding: 6px;
-            height: 100%;
-            grid-template-areas: 
-            'files process homework exams'
-            'files course_time course_time exams'
-            'files classroom classroom exams'
-            'files course_group course_group exams';
-            grid-template-columns: 1fr 3fr 1fr 1fr;
-            grid-template-rows: 25% 25% 25% 25%;
-            grid-gap: 2px;
-            background-color: rgb(87, 125, 250);
-        }
-        
-        .grid-container > div {
-            text-align: center;
-            padding: 10px;
-            background-color: rgb(164, 180, 201);
-        }
-        /* 资料部分的样式 */
-        .grid-container > div > input {
-            height: 40px;
-            width: 100%;
-            color: rgb(132, 45, 14);
-        }
+.item {
+  margin-bottom: 18px;
+}
 
-        .grid-container > div > button {
-            height: 40px;
-            width: 100%;
-            color: rgb(132, 45, 14);
-            background-color: rgb(183, 197, 253);
-        }
-        /* 当前进度的样式 */
-        .g-container {
-            width: 240px;
-            height: 25px;
-            border-radius: 25px;
-            background: rgb(235, 235, 246);
-        }
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: '';
+}
+.clearfix:after {
+  clear: both;
+}
 
-        .g-progress {
-            width: 30%;
-            height: inherit;
-            border-radius: 25px 0 0 25px;
-            background: linear-gradient(90deg, rgb(117, 241, 117), rgb(103, 237, 237));
-        }
-        /* 作业和考试部分的样式 */
-        /* .grid-container > div > select {
-            height: 50px;
-            width: 100%;
-            color: rgb(29, 78, 167);
-            background-color: rgb(183, 197, 253);
-        } */
-
-        .el-dropdown-link {
-            cursor: pointer;
-            color: #1c88f4;
-        }
-        .el-icon-arrow-down {
-            font-size: 12px;
-            width: 100%;
-        }
-    </style>
+.box-card {
+  width: 100%;
+}
+</style>

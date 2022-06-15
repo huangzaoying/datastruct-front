@@ -2,7 +2,6 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '../components/Login.vue'
 import Home from '../components/Home.vue'
-import Welcome from '../components/Welcome.vue'
 import homepage from '../components/homepage/homepage.vue'
 import course from '../components/course/course.vue'
 import active from '../components/active/active.vue'
@@ -13,7 +12,7 @@ Vue.use(VueRouter)
 const routes = [
     {
         path: '/',        
-        redirect: '/home'
+        redirect: '/home'//重定向到home页面
     },
     {
         name: 'login',
@@ -26,8 +25,7 @@ const routes = [
         component: Home,
         redirect: '/homepage',
         children: 
-        [
-            { name: 'welcome' ,path: '/welcome', component: Welcome }, 
+        [            
             {name: 'course', path: '/course', component: course }, 
             {name: 'homepage', path: '/homepage', component: homepage },
             {name: 'active', path: '/active' ,component: active},

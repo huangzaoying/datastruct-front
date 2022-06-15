@@ -330,10 +330,7 @@ export default {
   cursor: pointer;
 }
 .footer {
-  //position: fixed;
   bottom: 0;
-  //width: 100%;
-  //line-height: var(--footer-height);
   background: #0f1714;
   color: #fff;
 }
