@@ -4,7 +4,6 @@
 ```
 npm install
 npm i @amap/amap-jsapi-loader --save
-npm install -S node-sass sass-loader
 ```
 
 ### Compiles and hot-reloads for development

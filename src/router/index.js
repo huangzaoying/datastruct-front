@@ -12,7 +12,7 @@ Vue.use(VueRouter)
 const routes = [
     {
         path: '/',        
-        redirect: '/home'//重定向到home页面
+        redirect: '/login'//重定向到home页面
     },
     {
         name: 'login',
@@ -37,22 +37,21 @@ const routes = [
         path: '/coursedetail',
         component: coursedetail
     },
-    
 ]
 const router = new VueRouter({
     routes
 })
 
-// router.beforeEach((to, from, next) => {
-//     // to 将访问哪一个路径
-//     // from 代表从哪个路径跳转而来
-//     // next 是一个函数,表示放行
-//     //   next() 放行 next('/login') 强制跳转
-//     if (to.path === '/login') return next()
-//     // 获取token
-//     const token = window.sessionStorage.getItem('token')
-//     if (!token) return next('/login')
-//     next()
-// })
+router.beforeEach((to, from, next) => {
+    // to 将访问哪一个路径
+    // from 代表从哪个路径跳转而来
+    // next 是一个函数,表示放行
+    //   next() 放行 next('/login') 强制跳转
+    if (to.path === '/login') return next()
+    // 获取token
+    const token = window.sessionStorage.getItem('token')
+    if (!token) return next('/login')
+    next()
+})
 
 export default router    

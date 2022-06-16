@@ -7,6 +7,7 @@ import AMapLoader from '@amap/amap-jsapi-loader'
 import userUrl from '../../assets/user.png'
 import stUrl from '../../assets/start.png'
 import edUrl from '../../assets/end.png'
+import mdUrl from '../../assets/marker.png'
 window._AMapSecurityConfig = {
   securityJsCode: '8aedfd4ddbb3d0fb0b17995938924bc7',
 }
@@ -108,42 +109,6 @@ export default {
       AMapUI.loadUI(
         ['misc/PathSimplifier', 'overlay/SimpleMarker'],
         function (PathSimplifier, SimpleMarker) {
-          // that.end = new SimpleMarker({
-          //   //自定义图标地址
-          //   iconTheme: 'fresh',
-          //   iconStyle: {
-          //     src: edUrl,
-          //     style: {
-          //       width: '25px',
-          //       height: '37px',
-          //     },
-          //   },
-          //   //设置基点偏移
-          //   offset: new AMap.Pixel(0, 0),
-          //   anchor: 'center',
-          //   map: my_map,
-          //   showPositionPoint: false,
-          //   position: [116.484648, 39.999861],
-          //   zIndex: 100,
-          // })
-          // that.start = new SimpleMarker({
-          //   //自定义图标地址
-          //   iconTheme: 'fresh',
-          //   iconStyle: {
-          //     src: stUrl,
-          //     style: {
-          //       width: '25px',
-          //       height: '37px',
-          //     },
-          //   },
-          //   //设置基点偏移
-          //   offset: new AMap.Pixel(0, 0),
-          //   anchor: 'center',
-          //   map: my_map,
-          //   showPositionPoint: false,
-          //   position: [116.478935, 39.997761],
-          //   zIndex: 100,
-          // })
           //起点和终点
           that.end = new AMap.Marker({
             position: that.lines[0].path[that.lines[0].path.length - 1], // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]

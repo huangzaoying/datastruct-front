@@ -187,7 +187,7 @@ export default {
     },
     //闹钟和时间函数
     timefunc() {
-      let icnow = new Date(Date.parse('2022/5/15 09:50') + 1000 * increment++)
+      let icnow = new Date(Date.parse('2022/6/16 22:12') + 1000 * increment++)
       this.year = icnow.getFullYear()
       this.month = icnow.getMonth() + 1
       this.date = icnow.getDate()
