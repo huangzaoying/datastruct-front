@@ -30,19 +30,18 @@
         >
       </el-col>
     </el-row>
-    <el-table
-      :data="activeData.activeList"
-      style="width: 100%"
-      :default-sort="{ prop: 'date', order: 'descending' }"
-      border
-    >
+    <el-table :data="activeData.activeList" style="width: 100%" border>
       <el-table-column type="index" label="#"></el-table-column>
-      <el-table-column prop="date" label="活动时间" sortable width="200px">
+      <el-table-column prop="startTime" label="开始时间" sortable width="180px">
       </el-table-column>
-      <el-table-column prop="name" label="课外活动名称" sortable width="300px">
+      <el-table-column prop="endTime" label="结束时间" sortable width="180px">
       </el-table-column>
-      <el-table-column prop="type" label="课外活动类型" sortable width="300px">
-        {{ type == '0' ? '个人活动' : '集体活动' }}
+      <el-table-column prop="name" label="课外活动名称" sortable width="200px">
+      </el-table-column>
+      <el-table-column prop="type" label="课外活动类型" width="200px">
+        <template v-slot="scope">
+          {{ scope.row.type == '1' ? '个人活动' : '集体活动' }}
+        </template>
       </el-table-column>
       <el-table-column align="right">
         <template v-slot="scope">
@@ -68,14 +67,26 @@
       width="50%"
     >
       <el-form :model="editForm" ref="editFormRef" label-width="100px">
-        <el-form-item label="活动名称" prop="name">
+        <el-form-item label="活动名称" prop="name" required>
           <el-input v-model="editForm.name"></el-input>
         </el-form-item>
-        <el-form-item label="活动时间" required>
+        <el-form-item label="开始时间" required>
           <div class="block">
             <span class="demonstration"></span>
             <el-date-picker
-              v-model="editForm.date"
+              v-model="editForm.startTime"
+              type="datetime"
+              placeholder="选择日期时间"
+              value-format="yyyy-MM-dd HH:mm:ss"
+            >
+            </el-date-picker>
+          </div>
+        </el-form-item>
+        <el-form-item label="结束时间" required>
+          <div class="block">
+            <span class="demonstration"></span>
+            <el-date-picker
+              v-model="editForm.endTime"
               type="datetime"
               placeholder="选择日期时间"
               value-format="yyyy-MM-dd HH:mm:ss"
@@ -174,11 +185,11 @@
         <el-form-item label="活动名称" prop="name">
           <el-input v-model="addForm.name"></el-input>
         </el-form-item>
-        <el-form-item label="活动时间" required>
+        <el-form-item label="开始时间" required>
           <div class="block">
             <span class="demonstration"></span>
             <el-date-picker
-              v-model="addForm.date"
+              v-model="addForm.startTime"
               type="datetime"
               placeholder="选择日期时间"
               value-format="yyyy-MM-dd HH:mm:ss"
@@ -186,7 +197,19 @@
             </el-date-picker>
           </div>
         </el-form-item>
-        <el-form-item label="活动类型" prop="type">
+        <el-form-item label="结束时间" required>
+          <div class="block">
+            <span class="demonstration"></span>
+            <el-date-picker
+              v-model="addForm.endTime"
+              type="datetime"
+              placeholder="选择日期时间"
+              value-format="yyyy-MM-dd HH:mm:ss"
+            >
+            </el-date-picker>
+          </div>
+        </el-form-item>
+        <el-form-item label="活动类型" prop="type" required="true">
           <el-select v-model="addForm.type" placeholder="请选择">
             <el-option
               v-for="item in options1"
@@ -236,7 +259,8 @@ export default {
       addDialogVisible: false,
       // 添加课程数据的对象
       addForm: {
-        date: '',
+        startTime: '',
+        endTime: '',
         name: '',
         type: '',
       },
@@ -249,18 +273,12 @@ export default {
             trigger: 'blur',
           },
         ],
-        location: [
-          {
-            required: true,
-            message: '活动地址不能为空',
-            trigger: 'blur',
-          },
-        ],
       },
       editDialogVisble: false,
       editForm: {
         eventID: 0,
-        date: '',
+        startTime: '',
+        endTime: '',
         name: '',
         type: '',
       },
@@ -341,8 +359,10 @@ export default {
     async addactive() {
       console.log(this.addForm)
       const { data: res } = await this.$http.post(
-        'event/add?date=' +
-          this.addForm.date +
+        'event/add?startTime=?' +
+          this.addForm.startTime +
+          '&endTime=' +
+          this.addForm.endTime +
           '&name=' +
           this.addForm.name +
           '&type=' +
@@ -360,9 +380,7 @@ export default {
     async getactiveList() {
       this.$http.get('event/findAll').then(
         (response) => {
-          console.log(response)
           this.$store.commit('GET_active', response.data.entity)
-          console.log(response.data.entity)
         },
         (error) => {
           console.log('请求失败', error.message)
@@ -446,8 +464,7 @@ export default {
         return
       }
       this.clockForm.name = res.entity[0].name
-      this.clockForm.date = res.entity[0].date
-      console.log(this.clockForm)
+      this.clockForm.date = res.entity[0].startTime
     },
     addDislogClosed() {
       this.$refs.addFormRef.resetFields() //重置表单
@@ -468,6 +485,5 @@ export default {
   position: absolute;
   right: 20px;
   width: 150px;
-  // padding: 5px;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div id="page">
     <el-row>
-      <el-col :span="10"><Search /></el-col>
+      <el-col :span="24"><Search /></el-col>
     </el-row>
     <MapContainer />
   </div>

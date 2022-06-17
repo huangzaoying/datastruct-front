@@ -26,30 +26,13 @@ export default {
       nav: '',
       start: '',
       end: '',
+      now: '',
+      flag: false,
+      timeid: '',
       lines: [
         {
           name: '最优路线',
-          path: [
-            [116.478935, 39.997761],
-            [116.478939, 39.997825],
-            [116.478912, 39.998549],
-            [116.478912, 39.998549],
-            [116.478998, 39.998555],
-            [116.478998, 39.998555],
-            [116.479282, 39.99856],
-            [116.479658, 39.998528],
-            [116.480151, 39.998453],
-            [116.480784, 39.998302],
-            [116.480784, 39.998302],
-            [116.481149, 39.998184],
-            [116.481573, 39.997997],
-            [116.481863, 39.997846],
-            [116.482072, 39.997718],
-            [116.482362, 39.997718],
-            [116.483633, 39.998935],
-            [116.48367, 39.998968],
-            [116.484648, 39.999861],
-          ],
+          path: [],
         },
       ],
     }
@@ -70,20 +53,27 @@ export default {
           'AMap.HawkEye',
           'AMap.Geolocation',
           'AMap.AutoComplete',
-        ], // 需要使用的的插件列表，如比例尺'AMap.Scale'等
+        ],
       })
         .then((AMap) => {
           this.map = new AMap.Map('container', {
-            //设置地图容器id
-            viewMode: '3D', //是否为3D地图模式
-            zoom: 16, //初始化地图级别
-            center: this.lines[0].path[(this.lines[0].path.length - 1) / 2], //初始化地图中心点位置
+            viewMode: '3D',
+            zoom: 15, //初始化地图级别
+            center: [116.2841209, 40.15683511],
           })
           this.map.addControl(new AMap.Scale())
           this.map.addControl(new AMap.ToolBar())
           this.map.addControl(new AMap.HawkEye())
           this.map.addControl(new AMap.Geolocation())
-          this.auto = new AMap.AutoComplete(this.autoOptions)
+          //this.auto = new AMap.AutoComplete(this.autoOptions)
+          this.now = new AMap.Marker({
+            position: [116.2841209, 40.15683511], // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
+            offset: new AMap.Pixel(-15, -12), //相对于基点的偏移位置
+            icon: new AMap.Icon({
+              image: mdUrl,
+            }),
+          })
+          this.map.add(this.now)
         })
         .catch((e) => {
           console.log(e)
@@ -97,13 +87,22 @@ export default {
   created() {
     //消息订阅 当对方发数据就触发
     eventBus.$on('shareuserInput', (val) => {
-      this.autoOptions.input = val.inputId
+      console.log(val)
+      for (var i = 0; i < val.entity.length; i++) {
+        var temp = [val.entity[i].lng, val.entity[i].lat]
+        this.lines[0].path[i] = temp
+      }
+      if (!this.flag) {
+        //第一次请求路径
+        this.now.remove() //把当前定位删除了需要修改为终点的定位
+        this.flag = true
+      }
       let that = this
       var my_map = this.map
       if (that.pathSimplifierIns) {
         //通过该方法清空上次传入的轨迹
         that.pathSimplifierIns.setData([])
-        that.start.remove()
+        that.start.remove() //清空起点和终点
         that.end.remove()
       }
       AMapUI.loadUI(
@@ -145,8 +144,7 @@ export default {
               return null
             },
             renderOptions: {
-              //将点、线相关的style全部置emptyLineStyle
-              pathLineStyle: emptyLineStyle,
+              pathLineStyle: emptyLineStyle, //将点、线相关的style全部置emptyLineStyle
               pathLineSelectedStyle: emptyLineStyle,
               pathLineHoverStyle: emptyLineStyle,
               keyPointStyle: emptyLineStyle,
@@ -187,6 +185,9 @@ export default {
               },
             })
             that.navg.start()
+            that.map.setCenter(
+              that.lines[0].path[that.lines[0].path.length - 1] //设置中心点为终点
+            )
           })
         }
       )
@@ -194,6 +195,10 @@ export default {
   },
   beforeDestroy() {
     eventBus.$off('shareuserInput')
+  },
+  destroyed() {
+    this.map.destroy()
+    this.map = null
   },
 }
 </script>

@@ -17,15 +17,15 @@ import axios from 'axios'
 //请求根路径
 axios.defaults.baseURL = 'http://localhost:8080/'
 Vue.prototype.$http = axios
-axios.interceptors.request.use(config => {
-  // 登录授权 请求验证是否有token  需要授权的 API ，必须在请求头中使用 `Authorization` 字段提供 `token` 令牌
-  config.headers.Authorization = window.sessionStorage.getItem('token')
-  return config // 必须返回否则没有值
-})
+// axios.interceptors.request.use(config => {
+//   // 登录授权 请求验证是否有token  需要授权的 API ，必须在请求头中使用 `Authorization` 字段提供 `token` 令牌
+//   config.headers.Authorization = window.sessionStorage.getItem('token')
+//   return config // 必须返回否则没有值
+// })
 Vue.config.productionTip = false
 
 new Vue({
-    router,
-    store,
-    render: h => h(App)
+  router,
+  store,
+  render: h => h(App)
 }).$mount('#app')

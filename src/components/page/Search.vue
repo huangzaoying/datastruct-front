@@ -1,68 +1,105 @@
 <template>
-  <div id="search_container">
-    <el-input
-      placeholder="请输入查找的关键词"
-      clearable
-      v-model="inputText.userInput"
-      :id="inputText.inputId"
-    >
+  <el-row class="search_container" :gutter="20">
+    <el-col :span="6">
+      <el-input
+        placeholder="请输入起始地点"
+        clearable
+        v-model="inputText.origin"
+      >
+      </el-input>
+    </el-col>
+    <el-col :span="6">
+      <el-input
+        placeholder="请输入目的地点"
+        clearable
+        v-model="inputText.destination"
+      >
+      </el-input>
+    </el-col>
+    <el-col :span="6">
+      <el-radio-group v-model="inputText.radio">
+        <el-radio :label="1">步行</el-radio>
+        <el-radio :label="2">交通工具</el-radio>
+        <el-radio :label="0">混合</el-radio>
+      </el-radio-group>
+    </el-col>
+    <el-col :span="6">
+      <el-button icon="el-icon-search" circle @click="send()"></el-button>
       <el-button
-        slot="append"
-        icon="el-icon-search"
-        @click="send()"
+        type="info"
+        icon="el-icon-message"
+        circle
+        @click="dialogTableVisible = true"
       ></el-button>
-    </el-input>
-  </div>
+    </el-col>
+    <el-dialog title="对照表格" :visible.sync="dialogTableVisible" width="50%">
+      <el-table :data="newPoint" label-width="120px">
+        <el-table-column
+          property="id"
+          label="id"
+          width="180"
+          sortable
+        ></el-table-column>
+        <el-table-column
+          property="name"
+          label="地点"
+          sortable
+        ></el-table-column>
+      </el-table>
+    </el-dialog>
+  </el-row>
 </template>
 
 <script>
+import point from '../../assets/point.json'
 import eventBus from '@/Bus/eventBus'
 export default {
   data() {
     return {
       inputText: {
-        userInput: '',
-        inputId: 'searchInput',
-        path: [
-          [116.478935, 39.997761],
-          [116.478939, 39.997825],
-          [116.478912, 39.998549],
-          [116.478912, 39.998549],
-          [116.478998, 39.998555],
-          [116.478998, 39.998555],
-          [116.479282, 39.99856],
-          [116.479658, 39.998528],
-          [116.480151, 39.998453],
-          [116.480784, 39.998302],
-          [116.480784, 39.998302],
-          [116.481149, 39.998184],
-          [116.481573, 39.997997],
-          [116.481863, 39.997846],
-          [116.482072, 39.997718],
-          [116.482362, 39.997718],
-          [116.483633, 39.998935],
-          [116.48367, 39.998968],
-          [116.484648, 39.999861],
-        ],
+        radio: 1,
+        origin: '',
+        destination: '',
+        path: [],
       },
-      control: null,
+      dialogTableVisible: false,
+      point: [],
+      newPoint: [],
     }
   },
   methods: {
-    send() {
-      //利用输入框内容，返回了路线数组，再弹出对话框选择哪条路线
-      eventBus.$emit('shareuserInput', this.inputText)
+    async send() {
+      var fromID, toID
+      for (var i = 0; i < this.newPoint.length; i++) {
+        if (this.inputText.origin == this.newPoint[i].name)
+          fromID = this.newPoint[i].id
+        if (this.inputText.destination == this.newPoint[i].name)
+          toID = this.newPoint[i].id
+      }
+      console.log(fromID, toID)
+      const { data: res } = await this.$http.get(
+        'travel/time?fromID=' +
+          fromID +
+          '&toID=' +
+          toID +
+          '&type=' +
+          this.inputText.radio
+      )
+      console.log(res)
+      eventBus.$emit('shareuserInput', res)
     },
   },
   mounted() {
-    //this.send()
+    this.point = JSON.parse(JSON.stringify(point))
+    for (var i = 0; i < this.point.length; i++) {
+      this.newPoint[i] = {
+        name: this.point[i].name,
+        id: i,
+      }
+    }
   },
 }
 </script>
 
 <style lang="less" scoped>
-#search_container {
-  height: 100%;
-  width: 100%;
-}
 </style>>

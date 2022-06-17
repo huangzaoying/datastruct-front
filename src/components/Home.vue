@@ -74,6 +74,7 @@
           type="info"
           icon="el-icon-setting"
           circle
+          size="mid"
         ></el-button>
       </el-aside>
       <!-- 右侧内容主题 -->
@@ -144,8 +145,8 @@ export default {
       return m < 10 ? '0' + m : m
     },
     changetime() {
-      idx *= 10
-      if (idx == 10000) idx = 1
+      idx /= 10
+      if (idx == 1) idx = 1000
     },
     logout() {
       window.sessionStorage.clear()
@@ -333,5 +334,7 @@ export default {
   bottom: 0;
   background: #0f1714;
   color: #fff;
+  position: fixed;
+  bottom: 0;
 }
 </style>

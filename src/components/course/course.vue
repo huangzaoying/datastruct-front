@@ -55,13 +55,24 @@
       <!-- 课程列表 -->
       <el-table :data="courseData.courseList" stripe style="width: 100%" border>
         <el-table-column type="index" label="#"></el-table-column>
-        <el-table-column prop="name" label="课程名称"></el-table-column>
         <el-table-column
-          prop="date"
-          label="上课时间"
-          width="400px"
+          prop="name"
+          sortable
+          label="课程名称"
         ></el-table-column>
-        <el-table-column prop="location" label="上课地点"></el-table-column>
+        <el-table-column
+          prop="startTime"
+          label="上课时间"
+          width="200px"
+          sortable
+        ></el-table-column>
+        <el-table-column
+          prop="endTime"
+          label="下课时间"
+          width="200px"
+          sortable
+        ></el-table-column>
+        <el-table-column prop="dotName" label="上课地点"></el-table-column>
         <el-table-column
           prop="teacher"
           label="课程老师"
@@ -127,7 +138,7 @@
           <div class="block">
             <span class="demonstration"></span>
             <el-date-picker
-              v-model="addForm.date"
+              v-model="addForm.startTime"
               type="datetime"
               placeholder="选择日期时间"
               value-format="yyyy-MM-dd HH:mm:ss"
@@ -135,8 +146,20 @@
             </el-date-picker>
           </div>
         </el-form-item>
-        <el-form-item label="上课地点" prop="location">
-          <el-input v-model="addForm.location"></el-input>
+        <el-form-item label="下课时间" required>
+          <div class="block">
+            <span class="demonstration"></span>
+            <el-date-picker
+              v-model="addForm.endTime"
+              type="datetime"
+              placeholder="选择日期时间"
+              value-format="yyyy-MM-dd HH:mm:ss"
+            >
+            </el-date-picker>
+          </div>
+        </el-form-item>
+        <el-form-item label="上课地点" prop="dotName">
+          <el-input v-model="addForm.dotName"></el-input>
         </el-form-item>
         <el-form-item label="课程老师" prop="teacher">
           <el-input v-model="addForm.teacher"></el-input>
@@ -168,7 +191,7 @@
           <div class="block">
             <span class="demonstration"></span>
             <el-date-picker
-              v-model="editForm.date"
+              v-model="editForm.startTime"
               type="datetime"
               placeholder="选择日期时间"
               value-format="yyyy-MM-dd HH:mm:ss"
@@ -176,8 +199,20 @@
             </el-date-picker>
           </div>
         </el-form-item>
-        <el-form-item label="上课地点" prop="locationID">
-          <el-input v-model="editForm.location"></el-input>
+        <el-form-item label="下课时间" required>
+          <div class="block">
+            <span class="demonstration"></span>
+            <el-date-picker
+              v-model="editForm.endTime"
+              type="datetime"
+              placeholder="选择日期时间"
+              value-format="yyyy-MM-dd HH:mm:ss"
+            >
+            </el-date-picker>
+          </div>
+        </el-form-item>
+        <el-form-item label="上课地点" prop="dotName">
+          <el-input v-model="editForm.dotName"></el-input>
         </el-form-item>
         <el-form-item label="课程老师" prop="teacher">
           <el-input v-model="editForm.teacher"></el-input>
@@ -195,15 +230,34 @@
       :visible.sync="dialogTableVisible"
       width="50%"
     >
-      <el-table :data="course" label-width="100px">
-        <el-table-column property="name" label="课程名称"></el-table-column>
+      <el-table :data="course" label-width="120px">
         <el-table-column
-          property="date"
-          label="时间"
-          width="300"
+          property="name"
+          label="课程名称"
+          sortable
         ></el-table-column>
-        <el-table-column property="location" label="上课地点"></el-table-column>
-        <el-table-column property="teacher" label="教师"></el-table-column>
+        <el-table-column
+          property="startTime"
+          label="上课时间"
+          width="180"
+          sortable
+        ></el-table-column>
+        <el-table-column
+          property="endTime"
+          label="下课时间"
+          width="180"
+          sortable
+        ></el-table-column>
+        <el-table-column
+          property="dotName"
+          label="上课地点"
+          sortable
+        ></el-table-column>
+        <el-table-column
+          property="teacher"
+          label="教师"
+          sortable
+        ></el-table-column>
       </el-table>
     </el-dialog>
   </div>
@@ -231,11 +285,12 @@ export default {
       //用于展示查询的结果
       course: [
         {
-          courseID: null,
-          name: null,
-          dotID: null,
-          date: null,
-          teacher: null,
+          courseID: 0,
+          startTime: '',
+          endTime: '',
+          dotName: '',
+          name: '',
+          teacher: '',
         },
       ],
       dialogTableVisible: false,
@@ -244,9 +299,9 @@ export default {
       // 添加课程数据的对象
       addForm: {
         courseID: 0,
-        date: '',
-        locationID: 0,
-        location: '',
+        startTime: '',
+        endTime: '',
+        dotName: '',
         name: '',
         teacher: '',
       },
@@ -259,7 +314,7 @@ export default {
             trigger: 'blur',
           },
         ],
-        location: [
+        dotName: [
           {
             required: true,
             message: '课程地址不能为空',
@@ -280,11 +335,12 @@ export default {
       selectRoleId: '',
       // 编辑用户的对象
       editForm: {
-        courseID: null,
-        name: null,
-        dotID: null,
-        date: null,
-        teacher: null,
+        courseID: 0,
+        startTime: '',
+        endTime: '',
+        dotName: '',
+        name: '',
+        teacher: '',
       },
       //排序的选择项目
       options: [
@@ -345,16 +401,18 @@ export default {
       this.$refs.addFormRef.resetFields() //重置表单
     },
     // 点击按钮,添加新课程
-    addcourse() {
+    async addcourse() {
       this.$refs.addFormRef.validate(async (valid) => {
         if (!valid) return
         const { data: res } = await this.$http.post(
-          'course/add?date=' +
-            this.addForm.date +
-            '&dotID=' +
-            this.addForm.locationID +
+          'course/add?dotName=' +
+            this.addForm.dotName +
+            '&endTime=' +
+            this.addForm.endTime +
             '&name=' +
             this.addForm.name +
+            '&startTime=' +
+            this.addForm.startTime +
             '&teacher=' +
             this.addForm.teacher
         )
@@ -364,10 +422,12 @@ export default {
         this.addDialogVisible = false
         // 添加成后重新获取用户数据,不需要用户手动刷新
         this.getcourseList()
-        return this.$message.success('添加成功')
+        this.$message.success('添加成功')
       })
+      const { data: res } = await this.$http.get('course/check')
+      console.log(res)
+      if (res.success == 'true') return this.$message.error('时间冲突!!!')
     },
-    // 展示编辑用于的对话框 通过id
     async showEditDialog(id) {
       console.log(id)
       const { data: res } = await this.$http.get('course/find?id=' + id)
@@ -393,14 +453,16 @@ export default {
         console.log(valid)
         if (!valid) return
         const { data: res } = await this.$http.put(
-          'course/update?date=' +
-            editForm.date +
-            '&dotID=' +
-            editForm.locationID +
-            '&id=' +
-            editForm.courseID +
+          'course/update?dotName=' +
+            editForm.dotName +
+            '&endTime=' +
+            editForm.endTime +
             '&name=' +
             editForm.name +
+            '&id=' +
+            editForm.courseID +
+            '&startTime=' +
+            editForm.startTime +
             '&teacher=' +
             editForm.teacher
         )
@@ -474,7 +536,6 @@ export default {
     //查询功能完成
     async search(query) {
       var response
-      console.log(query)
       if (this.radio == '1') {
         const { data: res } = await this.$http.get('course/find?name=' + query)
         response = res

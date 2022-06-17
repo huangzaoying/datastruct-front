@@ -47,7 +47,7 @@
           @click="addDialogVisible1 = true"
         ></el-button>
       </h4>
-      <div width="10">
+      <div class="search">
         <!-- 搜索与添加区域 -->
         <!-- 每一次clear都会调用getcourList，并且更新匹配参数query -->
         <el-input
@@ -86,25 +86,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-upload
-        class="upload-demo"
-        action="http://localhost:8080/"
-        :on-preview="handlePreview"
-        :on-remove="handleRemove"
-        :before-remove="beforeRemove"
-        multiple
-        :limit="3"
-        :on-exceed="handleExceed"
-        :file-list="fileList"
-      >
-        <el-button size="small" type="primary" style="margin-top: 20px"
-          >点击上传</el-button
-        >
-        <div slot="tip" class="el-upload__tip">
-          只能上传jpg/png文件,且不超过500kb
-        </div>
-      </el-upload></el-col
-    >
+    </el-col>
     <el-col :span="9">
       <h4>
         作业<el-button
@@ -120,34 +102,29 @@
         style="width: 100%"
         :default-sort="{ prop: 'date', order: 'descending' }"
       >
-        <el-table-column prop="title" label="作业名" width="140" sortable>
+        <el-table-column prop="title" label="作业名" width="100" sortable>
         </el-table-column>
         <el-table-column prop="content" label="作业内容" width="140" sortable>
         </el-table-column>
         <el-table-column prop="ddl" label="截止日期" width="180" sortable>
         </el-table-column>
         <el-table-column prop="state" label="是否完成" width="100" sortable>
-          {{ state == 1 ? '完成' : '未完成' }}
+          <template v-slot="scope">
+            {{ scope.row.state == 1 ? '完成' : '未完成' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="100">
+          <template v-slot="scope">
+            <!-- 上传-->
+            <el-button
+              type="primary"
+              size="mini"
+              @click="update(scope.row.workID)"
+              >上传<i class="el-icon-upload el-icon--right"></i
+            ></el-button>
+          </template>
         </el-table-column>
       </el-table>
-      <el-upload
-        class="upload-demo"
-        action="http://localhost:8080/"
-        :on-preview="handlePreview"
-        :on-remove="handleRemove"
-        :before-remove="beforeRemove"
-        multiple
-        :limit="3"
-        :on-exceed="handleExceed"
-        :file-list="fileList"
-      >
-        <el-button size="small" type="primary" style="margin-top: 20px"
-          >点击上传</el-button
-        >
-        <div slot="tip" class="el-upload__tip">
-          只能上传jpg/png文件,且不超过500kb
-        </div>
-      </el-upload>
     </el-col>
 
     <!-- 添加考试对话框 -->
@@ -224,8 +201,17 @@
       width="50%"
     >
       <el-table :data="file" label-width="100px">
-        <el-table-column property="title" label="标题"></el-table-column>
-        <el-table-column property="content" label="内容"></el-table-column>
+        <el-table-column
+          property="title"
+          label="标题"
+          width="200"
+          sortable
+        ></el-table-column>
+        <el-table-column
+          property="content"
+          label="内容"
+          sortable
+        ></el-table-column>
       </el-table>
     </el-dialog>
     <el-dialog
@@ -271,7 +257,7 @@
             </el-date-picker>
           </div>
         </el-form-item>
-        <el-form-item label="作业内容" prop="location" required>
+        <el-form-item label="作业内容" prop="content" required>
           <el-input v-model="addForm2.content"></el-input>
         </el-form-item>
       </el-form>
@@ -362,22 +348,6 @@ export default {
     }
   },
   methods: {
-    handleRemove(file, fileList) {
-      console.log(file, fileList)
-    },
-    handlePreview(file) {
-      console.log(file)
-    },
-    handleExceed(files, fileList) {
-      this.$message.warning(
-        `当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${
-          files.length + fileList.length
-        } 个文件`
-      )
-    },
-    beforeRemove(file, fileList) {
-      return this.$confirm(`确定移除 ${file.name}？`)
-    },
     addDislogClosed() {
       this.$refs.addFormRef.resetFields() //重置表单
     },
@@ -399,20 +369,19 @@ export default {
         this.addDialogVisible = true
       }
     },
-    //
     addexam() {
       this.$refs.addFormRef.validate(async (valid) => {
         console.log(valid)
         if (!valid) return
         //可以发起添加考试请求
         const { data: res } = await this.$http.post(
-          'exam/add?dotName=' +
-            this.addForm.name +
-            'endTime=' +
+          'exam/add?dotID=' +
+            this.addForm.dotID +
+            '&endTime=' +
             this.addForm.endTime +
-            'name' +
+            '&name' +
             this.addForm.name +
-            'startTime=' +
+            '&startTime=' +
             this.addForm.startTime
         )
         if (!res.success) {
@@ -420,7 +389,7 @@ export default {
         }
         this.addDialogVisible = false
         // 添加成后重新获取用户数据,不需要用户手动刷新
-        //this.getAllexam()
+        this.getAllexam()
         return this.$message.success('添加成功')
       })
     },
@@ -436,9 +405,7 @@ export default {
             '&title=' +
             this.addForm1.title
         )
-        if (!res.success) {
-          return this.$message.error('添加失败')
-        }
+        if (!res.success) return this.$message.error('添加失败')
         this.addDialogVisible1 = false
         // 添加成后重新获取用户数据,不需要用户手动刷新
         this.getAllFile()
@@ -462,9 +429,9 @@ export default {
         if (!res.success) {
           return this.$message.error('添加失败')
         }
-        this.addDialogVisible1 = false
+        this.addDialogVisible2 = false
         // 添加成后重新获取用户数据,不需要用户手动刷新
-        this.getAllFile()
+        this.getAllWork()
         return this.$message.success('添加成功')
       })
     },
@@ -477,7 +444,6 @@ export default {
         return this.$message.error('查询课程数据失败~')
       }
       this.coursedetail = res.entity[0]
-      console.log(this.coursedetail)
       return this.$message.success('查询课程数据成功~')
     },
     //完成 获取所有的资料
@@ -509,14 +475,26 @@ export default {
         }
       )
     },
+    async getAllexam() {
+      await this.$http.get('exam/findAll').then(
+        (response) => {
+          var data = {
+            val: response.data.entity,
+            total: 0,
+          }
+          this.$store.commit('GET_exam', data)
+        },
+        (error) => {
+          console.log('请求失败', error.message)
+        }
+      )
+    },
     async searchFile(query) {
       //按照title查找
-      const { data: res } = await this.$http.get(
-        'course/find?id=0' + '&title=' + query
-      )
+      const { data: res } = await this.$http.get('file/find?title=' + query)
       if (res.entity.length) {
         for (var i = 0; i < res.entity.length; i++) {
-          this.course[i] = res.entity[i]
+          this.file[i] = res.entity[i]
         }
         this.dialogTableVisible = true
         return this.$message.success('查询成功!')
@@ -557,18 +535,32 @@ export default {
         this.$message.success('更新成功!')
       })
     },
+    async update(id) {
+      console.log(id)
+      const { data: res } = await this.$http.put(
+        'work/update?content=暂无' + '&id=' + id
+      )
+      console.log(res)
+      this.getAllWork()
+      if (!res.success) {
+        return this.$message.error('上传失败')
+      }
+      return this.$message.success('上传成功')
+    },
   },
   computed: {
     // 存放课程的数据和数量
     ...mapState(['fileData']),
     ...mapState(['workData']),
+    ...mapState(['examData']),
     course: {
       get() {
         var courseList = []
         courseList[0] = '课程名称：' + this.coursedetail.name
-        courseList[1] = '上课时间：' + this.coursedetail.date
-        courseList[2] = '上课地点：' + this.coursedetail.dotID
-        courseList[3] = '上课教师：' + this.coursedetail.teacher
+        courseList[1] = '上课时间：' + this.coursedetail.startTime
+        courseList[2] = '下课时间：' + this.coursedetail.endTime
+        courseList[3] = '上课地点：' + this.coursedetail.dotName
+        courseList[4] = '上课教师：' + this.coursedetail.teacher
         return courseList
       },
     },
@@ -578,6 +570,7 @@ export default {
     this.getAllFile()
     this.getAllWork()
     this.getCourse()
+    this.getAllexam()
   },
 }
 </script>
@@ -633,5 +626,8 @@ export default {
 .box-card {
   width: 100%;
   background: greenyellow;
+}
+.search {
+  width: 40%;
 }
 </style>
