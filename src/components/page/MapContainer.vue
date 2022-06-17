@@ -89,9 +89,21 @@ export default {
     eventBus.$on('shareuserInput', (val) => {
       console.log(val)
       for (var i = 0; i < val.entity.length; i++) {
-        var temp = [val.entity[i].lng, val.entity[i].lat]
-        this.lines[0].path[i] = temp
+        var temp1 = [val.res1.entity[i].lng, val.res1.entity[i].lat]
+        var temp2 = [val.res2.entity[i].lng, val.res2.entity[i].lat]
+        this.lines[0].path[i] = temp1
+        this.lines[1].path[i] = temp2
       }
+      this.$notify({
+        title: '最短距离',
+        message: val.res1.message,
+        duration: 0,
+      })
+      this.$notify({
+        title: '最短时间',
+        message: val.res1.message,
+        duration: 0,
+      })
       if (!this.flag) {
         //第一次请求路径
         this.now.remove() //把当前定位删除了需要修改为终点的定位
@@ -154,7 +166,6 @@ export default {
               keyPointOnSelectedPathLineStyle: emptyLineStyle,
             },
           })
-          //设置轨迹数据 that.lines是我项目的数据，具体根据自身项目设置
           that.pathSimplifierIns.setData(that.lines)
           //因为可能存在多条路径，所以循环设置
           that.lines.forEach((item, index) => {

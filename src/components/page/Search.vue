@@ -77,7 +77,7 @@ export default {
           toID = this.newPoint[i].id
       }
       console.log(fromID, toID)
-      const { data: res } = await this.$http.get(
+      const { data: res1 } = await this.$http.get(
         'travel/time?fromID=' +
           fromID +
           '&toID=' +
@@ -85,7 +85,15 @@ export default {
           '&type=' +
           this.inputText.radio
       )
-      console.log(res)
+      const { data: res2 } = await this.$http.get(
+        'travel/len?fromID=' +
+          fromID +
+          '&toID=' +
+          toID +
+          '&type=' +
+          this.inputText.radio
+      )
+      var res = { res1, res2 }
       eventBus.$emit('shareuserInput', res)
     },
   },
