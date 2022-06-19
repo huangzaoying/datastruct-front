@@ -89,19 +89,12 @@ export default {
     eventBus.$on('shareuserInput', (val) => {
       console.log(val)
       for (var i = 0; i < val.entity.length; i++) {
-        var temp1 = [val.res1.entity[i].lng, val.res1.entity[i].lat]
-        var temp2 = [val.res2.entity[i].lng, val.res2.entity[i].lat]
+        var temp1 = [val.entity[i].lng, val.entity[i].lat]
         this.lines[0].path[i] = temp1
-        this.lines[1].path[i] = temp2
       }
       this.$notify({
-        title: '最短距离',
-        message: val.res1.message,
-        duration: 0,
-      })
-      this.$notify({
-        title: '最短时间',
-        message: val.res1.message,
+        title: '最优路径',
+        message: val.message,
         duration: 0,
       })
       if (!this.flag) {

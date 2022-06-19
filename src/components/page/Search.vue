@@ -85,16 +85,7 @@ export default {
           '&type=' +
           this.inputText.radio
       )
-      const { data: res2 } = await this.$http.get(
-        'travel/len?fromID=' +
-          fromID +
-          '&toID=' +
-          toID +
-          '&type=' +
-          this.inputText.radio
-      )
-      var res = { res1, res2 }
-      eventBus.$emit('shareuserInput', res)
+      eventBus.$emit('shareuserInput', res1)
     },
   },
   mounted() {
